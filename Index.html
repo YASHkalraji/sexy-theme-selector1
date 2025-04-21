@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensual Word Selector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        .word-button {
+            transition: all 0.3s ease;
+            transform: scale(1);
+        }
+        .word-button:hover {
+            transform: scale(1.05);
+        }
+        .word-button:active {
+            transform: scale(0.98);
+        }
+        .theme-transition * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .gradient-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(236, 72, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen theme-transition">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">Sensual Word Selector</h1>
+            <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-300 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Selected Word Display -->
+            <div id="selected-word-container" class="mb-8 text-center hidden">
+                <div class="inline-block mb-4">
+                    <div id="selected-word" class="text-5xl md:text-6xl font-bold bg-clip-text text-transparent gradient-bg animate__animated animate__fadeIn">
+                    </div>
+                </div>
+                <div id="word-suggestion" class="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto animate__animated animate__fadeInUp">
+                </div>
+            </div>
+
+            <!-- Word Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8">
+                <!-- Word buttons will be inserted here by JavaScript -->
+            </div>
+
+            <!-- Random Button -->
+            <div class="text-center">
+                <button id="random-button" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-md hover:shadow-lg word-button pulse">
+                    Pick Random Word
+                </button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-sm text-gray-500 dark:text-gray-400">
+            <p>Click words to get inspiration for your next video or reel</p>
+        </footer>
+    </div>
+
+    <script>
+        // Word list with suggestions
+        const words = [
+            { word: "Smile", suggestion: "Capture genuine smiles in golden hour light for a warm, inviting feel." },
+            { word: "Gaze", suggestion: "Slow motion eye contact shots can create intense emotional connection." },
+            { word: "Flirt", suggestion: "Playful interactions and teasing glances make for engaging content." },
+            { word: "Blush", suggestion: "Close-ups of flushed cheeks can emphasize vulnerability and beauty." },
+            { word: "Whisper", suggestion: "ASMR-style whispering creates intimacy with your audience." },
+            { word: "Touch", suggestion: "Gentle caresses filmed in soft focus evoke sensuality." },
+            { word: "Bite", suggestion: "Playful biting of lips or objects adds a hint of danger and allure." },
+            { word: "Lips", suggestion: "Glossy lip close-ups with fruit or flowers make striking visuals." },
+            { word: "Skin", suggestion: "Texture shots of skin with water droplets or glitter catch the light beautifully." },
+            { word: "Moan", suggestion: "Subtle sound design can amplify the impact of your visuals." },
+            { word: "Wet", suggestion: "Water elements add movement and a fresh, sensual quality." },
+            { word: "Crave", suggestion: "Build anticipation with slow reveals and longing looks." },
+            { word: "Ride", suggestion: "Movement-based shots with flowing fabrics create dynamic energy." },
+            { word: "Wild", suggestion: "Natural settings and untamed hair convey freedom and passion." }
+        ];
+
+        // DOM elements
+        const wordGrid = document.querySelector('.grid');
+        const selectedWordContainer = document.getElementById('selected-word-container');
+        const selectedWord = document.getElementById('selected-word');
+        const wordSuggestion = document.getElementById('word-suggestion');
+        const randomButton = document.getElementById('random-button');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIconDark = document.getElementById('theme-icon-dark');
+        const themeIconLight = document.getElementById('theme-icon-light');
+
+        // Create word buttons
+        function createWordButtons() {
+            words.forEach(item => {
+                const button = document.createElement('button');
+                button.className = 'word-button px-4 py-3 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md font-medium text-indigo-600 dark:text-indigo-400 border border-gray-200 dark:border-gray-700 transition-all';
+                button.textContent = item.word;
+                button.addEventListener('click', () => selectWord(item));
+                wordGrid.appendChild(button);
+            });
+        }
+
+        // Select a word
+        function selectWord(item) {
+            selectedWord.textContent = item.word;
+            wordSuggestion.textContent = item.suggestion;
+            
+            // Add animation classes
+            selectedWordContainer.classList.remove('hidden');
+            selectedWord.classList.remove('animate__fadeIn');
+            wordSuggestion.classList.remove('animate__fadeInUp');
+            
+            // Trigger reflow to restart animations
+            void selectedWord.offsetWidth;
+            void wordSuggestion.offsetWidth;
+            
+            selectedWord.classList.add('animate__fadeIn');
+            wordSuggestion.classList.add('animate__fadeInUp');
+        }
+
+        // Select random word
+        function selectRandomWord() {
+            const randomIndex = Math.floor(Math.random() * words.length);
+            selectWord(words[randomIndex]);
+        }
+
+        // Theme toggle functionality
+        function setupThemeToggle() {
+            const savedTheme = localStorage.getItem('theme') || 
+                              (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                themeIconDark.classList.add('hidden');
+                themeIconLight.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIconDark.classList.remove('hidden');
+                themeIconLight.classList.add('hidden');
+            }
+            
+            themeToggle.addEventListener('click', function() {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                
+                themeIconDark.classList.toggle('hidden');
+                themeIconLight.classList.toggle('hidden');
+            });
+        }
+
+        // Initialize app
+        function init() {
+            createWordButtons();
+            setupThemeToggle();
+            randomButton.addEventListener('click', selectRandomWord);
+            
+            // Select first word by default
+            selectWord(words[0]);
+        }
+
+        // Start the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
